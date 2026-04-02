@@ -3651,6 +3651,8 @@ function uninstall(isGlobal, runtime = 'claude') {
     const gsdCommandsDir = path.join(targetDir, 'commands', 'gsd');
     if (fs.existsSync(gsdCommandsDir)) {
       // Preserve user-generated files before wipe (#1423)
+      // Note: if more user files are added, consider a naming convention (e.g., USER-*.md)
+      // and preserve all matching files instead of listing each one individually.
       const devPrefsPath = path.join(gsdCommandsDir, 'dev-preferences.md');
       const preservedDevPrefs = fs.existsSync(devPrefsPath) ? fs.readFileSync(devPrefsPath, 'utf-8') : null;
 
@@ -3660,9 +3662,13 @@ function uninstall(isGlobal, runtime = 'claude') {
 
       // Restore user-generated files
       if (preservedDevPrefs) {
-        fs.mkdirSync(gsdCommandsDir, { recursive: true });
-        fs.writeFileSync(devPrefsPath, preservedDevPrefs);
-        console.log(`  ${green}✓${reset} Preserved commands/gsd/dev-preferences.md`);
+        try {
+          fs.mkdirSync(gsdCommandsDir, { recursive: true });
+          fs.writeFileSync(devPrefsPath, preservedDevPrefs);
+          console.log(`  ${green}✓${reset} Preserved commands/gsd/dev-preferences.md`);
+        } catch (err) {
+          console.error(`  ${red}✗${reset} Failed to restore dev-preferences.md: ${err.message}`);
+        }
       }
     }
   } else {
@@ -3705,9 +3711,13 @@ function uninstall(isGlobal, runtime = 'claude') {
 
     // Restore user-generated files
     if (preservedProfile) {
-      fs.mkdirSync(gsdDir, { recursive: true });
-      fs.writeFileSync(userProfilePath, preservedProfile);
-      console.log(`  ${green}✓${reset} Preserved get-shit-done/USER-PROFILE.md`);
+      try {
+        fs.mkdirSync(gsdDir, { recursive: true });
+        fs.writeFileSync(userProfilePath, preservedProfile);
+        console.log(`  ${green}✓${reset} Preserved get-shit-done/USER-PROFILE.md`);
+      } catch (err) {
+        console.error(`  ${red}✗${reset} Failed to restore USER-PROFILE.md: ${err.message}`);
+      }
     }
   }
 
